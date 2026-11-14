@@ -11,13 +11,13 @@ Common mistakes this prevents: using `Math.random()` or a spreadsheet `RAND()` w
 ## Install
 
 ```sh
-npm install github:x3allamerican/x3-dot-random
+npm install x3-dot-random
 ```
 
 ## Use
 
 ```ts
-import { averagePool, annualMinimums, periodTarget, selectRandom, verifySelection, checkYear } from '@x3/dot-random';
+import { averagePool, annualMinimums, periodTarget, selectRandom, verifySelection, checkYear } from 'x3-dot-random';
 
 annualMinimums(averagePool([40, 44, 38, 42])); // { drug: 21, alcohol: 5, averageDrivers: 41, ... }
 

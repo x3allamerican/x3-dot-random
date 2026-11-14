@@ -1,6 +1,6 @@
 {
-  "name": "@x3/dot-random",
-  "version": "1.0.0",
+  "name": "x3-dot-random",
+  "version": "1.0.1",
   "description": "FMCSA random drug and alcohol testing (49 CFR 382.305): annual and per-period test counts, an unbiased auditable random draw, and a year check.",
   "type": "module",
   "main": "dist/index.js",
@@ -49,5 +49,8 @@
   },
   "devDependencies": {
     "typescript": "^5.6.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
