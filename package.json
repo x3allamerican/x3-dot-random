@@ -1,0 +1,53 @@
+{
+  "name": "@x3/dot-random",
+  "version": "1.0.0",
+  "description": "FMCSA random drug and alcohol testing (49 CFR 382.305): annual and per-period test counts, an unbiased auditable random draw, and a year check.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "data",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/fix-dts.mjs",
+    "test": "node --test \"test/*.test.ts\"",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "dot",
+    "fmcsa",
+    "drug-testing",
+    "alcohol-testing",
+    "random-selection",
+    "49-cfr-382",
+    "clearinghouse",
+    "fleet-safety",
+    "trucking",
+    "compliance"
+  ],
+  "author": "X3 Fleet Safety (https://x3fleetsafety.com)",
+  "license": "MIT",
+  "homepage": "https://github.com/x3allamerican/x3-dot-random#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x3allamerican/x3-dot-random.git"
+  },
+  "bugs": {
+    "url": "https://github.com/x3allamerican/x3-dot-random/issues"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

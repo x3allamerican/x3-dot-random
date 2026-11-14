@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Free DOT Random Drug Test Selector (49 CFR 382.305) | X3 Fleet Safety</title>
+<meta name="description" content="Free FMCSA random drug and alcohol test selector: how many tests your fleet needs this year and this quarter, and an unbiased, auditable random draw with a pool fingerprint. Runs in your browser; nothing is uploaded.">
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="https://x3fleetsafety.com"><b>X3</b> Fleet Safety</a>
+  <nav><a href="https://github.com/x3allamerican/x3-dot-random">Source on GitHub</a><a href="https://x3fleetsafety.com">X3 Fleet Safety</a></nav>
+</header>
+<main>
+  <h1>DOT random <span>selection</span></h1>
+  <p class="lede">Paste your random pool, one driver ID per line (use employee numbers, not names or SSNs). See how many drug and alcohol tests this period needs to stay on pace for FMCSA's 50% and 10% minimums, then make an unbiased draw you can prove to an auditor. Runs in your browser; nothing is uploaded.</p>
+  <div class="grid">
+    <section class="box">
+      <h2>Pool and period</h2>
+      <label for="pool">Driver IDs in the pool</label>
+      <textarea id="pool" spellcheck="false"></textarea>
+      <div class="row">
+        <div><label for="per">Periods per year</label><select id="per"><option value="4">Quarterly</option><option value="12">Monthly</option></select></div>
+        <div><label for="k">This period (1 = first)</label><input id="k" type="number" min="1" value="1"></div>
+      </div>
+      <div class="row">
+        <div><label for="prev">Pool sizes in earlier periods (comma separated)</label><input id="prev" placeholder="e.g. 40, 42"></div>
+        <div><label for="dd">Drug tests done so far</label><input id="dd" type="number" min="0" value="0"></div>
+        <div><label for="ad">Alcohol tests done so far</label><input id="ad" type="number" min="0" value="0"></div>
+      </div>
+      <label for="seed">Seed (optional: makes the draw repeatable for an auditor; keep it private until after testing)</label>
+      <input id="seed" placeholder="e.g. 2026-Q1 plus a secret word">
+      <div class="row"><button id="go">Draw Drivers</button></div>
+    </section>
+    <section class="box">
+      <h2>Selection</h2>
+      <div class="kpis" id="kpis"></div>
+      <ul class="list" id="out"><li class="small">Press "Draw Drivers".</li></ul>
+    </section>
+  </div>
+  <p class="small" style="margin-top:22px">Decision support, not legal advice. Each driver has an equal chance every draw; drivers tested earlier stay in the pool (49 CFR 382.305(i)). Rates: FMCSA 2026, 50% drug and 10% alcohol. If you use a consortium (C/TPA), it must test at these rates for the whole pool.</p>
+</main>
+<footer>Free and open source (MIT) from <a href="https://x3fleetsafety.com">X3 Fleet Safety</a>: driver qualification, hours of service, drug and alcohol, CSA and the rest of your DOT program in one place.</footer>
+<script type="module">
+import { selectRandom, periodTarget, FMCSA_RATES } from './random.js';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+$('pool').value = Array.from({ length: 42 }, (_, i) => `EMP-${1001 + i}`).join('\n');
+async function go() {
+  try {
+    const pool = $('pool').value.split(/\s*[\n,]\s*/).filter(Boolean);
+    const n = +$('per').value; const k = Math.min(n, Math.max(1, +$('k').value)) - 1;
+    const prev = $('prev').value.split(/[,\s]+/).filter(Boolean).map(Number).slice(0, k);
+    while (prev.length < k) prev.push(pool.length);
+    const sizes = [...prev, pool.length];
+    const drugN = periodTarget({ periodsPerYear: n, periodIndex: k, poolSoFar: sizes, completedSoFar: +$('dd').value, rate: FMCSA_RATES.drug });
+    const alcN = periodTarget({ periodsPerYear: n, periodIndex: k, poolSoFar: sizes, completedSoFar: +$('ad').value, rate: FMCSA_RATES.alcohol });
+    const seed = $('seed').value.trim() || undefined;
+    const drug = await selectRandom(pool, drugN, { alternates: Math.min(2, pool.length - drugN), seed: seed && `${seed}:drug`, testType: 'drug' });
+    const alc = await selectRandom(pool, alcN, { alternates: Math.min(1, pool.length - alcN), seed: seed && `${seed}:alcohol`, testType: 'alcohol' });
+    $('kpis').innerHTML = [[pool.length, 'In the pool'], [drugN, 'Drug tests now'], [alcN, 'Alcohol tests now']].map(([v, l]) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('');
+    const list = (s, label) => `<li><span class="pill warn">${label}</span> ${s.selected.map(esc).join(', ') || 'none due this period'}${s.alternates.length ? `<br><span class="small">Alternates (only if a selected driver is excused): ${s.alternates.map(esc).join(', ')}</span>` : ''}</li>`;
+    $('out').innerHTML = list(drug, 'Drug') + list(alc, 'Alcohol')
+      + `<li class="small">Pool fingerprint (SHA-256): <code style="word-break:break-all">${drug.poolHash}</code><br>Method: ${esc(drug.method)}. Drawn ${new Date(drug.at).toLocaleString()}. Print or save this page as your selection record.</li>`;
+  } catch (e) { $('out').innerHTML = `<li><span class="pill bad">Check</span> ${esc(e.message)}</li>`; }
+}
+$('go').onclick = go;
+</script>
+</body>
+</html>
